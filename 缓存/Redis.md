@@ -1,7 +1,7 @@
 #Redis
 
 ## 数据类型
-> string, hash, list, set, zset
+string, hash, list, set, zset
 
 ## 持久化
 |&nbsp;|RDB|AOF|
@@ -14,4 +14,4 @@
 
 ## 通信流程
 ![avatar](redis.png)
-因此，Redis单线程只是指执行命令的核心模块是单线程。
+因此，Redis单线程是指执行命令的核心模块是单线程。
