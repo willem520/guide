@@ -15,3 +15,7 @@ string, hash, list, set, zset
 ## 通信流程
 ![avatar](redis.png)
 因此，Redis单线程是指执行命令的核心模块是单线程。
+
+## Redis为什么快
+![avatar](redis-fast.png)
+可查看详细解释：https://www.jianshu.com/p/6cb9e96207f8
