@@ -4,7 +4,7 @@
 
 ### Eureka
 工作流程
-
+![avatar](Eureka.jpg)
 1. Eureka Server启动成功，等待服务端注册。在启动过程中如果配置了集群，集群之间定时通过Replicate同步注册表，每个Eureka Server都存在独立完整的服务注册表信息
 2. Eureka Client启动时根据配置的Eureka Server地址去注册中心注册服务
 3. Eureka Client会每30s向Eureka Server发送一次心跳请求（续约），证明客户端服务正常
