@@ -15,3 +15,26 @@
 8. 服务调用时，Eureka Client会先从本地缓存找寻调取的服务。如果获取不到，先从注册中心刷新注册表，再同步到本地缓存
 9. Eureka Client获取到目标服务器信息，发起服务调用
 10. Eureka Client程序关闭时向 Eureka Server发送取消请求，Eureka Server将实例从注册表中删除
+
+## Config
+|对比项目/配置中心|config|apollo|nacos|
+|-------|:---|:---|:---|
+|开源时间|2014.9|2016.5|2018.6|
+|配置实时推送|支持（Spring Cloud Bus）|支持（HTTP长轮询1s内）|支持（HTTP长轮询1s内）|
+|版本管理|支持（Git）|自动管理|自动管理|
+|配置回滚|支持（Git）|支持|支持|
+|灰度发布|支持|支持|待支持|
+|权限管理|支持|支持|待支持|
+|多集群多环境|支持|支持|支持|
+|监听查询|支持|支持|支持|
+|多语言|只支持Java|Go,C++,Python,Java,.net,OpenAPI|Python,Java,Nodejs,OpenAPI|
+|分布式高可用最小集群数量|Config-Server2+Git+MQ=4|Config2+Admin3+Portal*2+Mysql=8|Nacos*3+MySql=4|
+|配置格式校验|不支持|支持|支持|
+|通信协议|HTTP和AMQP|HTTP|HTTP|
+|数据一致性|Git保证数据一致性，Config-Server从Git读取数据|数据库模拟消息队列，Apollo定时读消息|HTTP异步通知|
+
+
+## Apollo
+![avatar](apollo.jpg)
+Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩展机制实现的，在Spring容器启动过程中，Apollo通过自定义的BeanPostProcessor和BeanFactoryPostProcessor將参数中包含${…}占位符和@Value注解的Bean注册到Apollo框架中定义的注册表中。然后通过Http长轮询不断的去获取服务端的配置信息，一旦配置发生变化，Apollo会根据变化的配置的Key找到对应的Bean，然后修改Bean的属性，从而实现了配置动态生效的特性。
+需要注意的是，Apollo在配置变化后，只能修改Bean的属性，例如我们数据源的属性发生变化，新创建的Connection对象是没问题的，但是连接池中已经创建的Connection对象相关信息是不能动态修改的，所以依然需要重启应用
