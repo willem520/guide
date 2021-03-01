@@ -3,8 +3,8 @@
 ## SpringCloud
 
 ### Eureka
-工作流程
 ![avatar](Eureka.jpg)
+工作流程：
 1. Eureka Server启动成功，等待服务端注册。在启动过程中如果配置了集群，集群之间定时通过Replicate同步注册表，每个Eureka Server都存在独立完整的服务注册表信息
 2. Eureka Client启动时根据配置的Eureka Server地址去注册中心注册服务
 3. Eureka Client会每30s向Eureka Server发送一次心跳请求（续约），证明客户端服务正常
@@ -40,4 +40,26 @@ Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩�
 需要注意的是，Apollo在配置变化后，只能修改Bean的属性，例如我们数据源的属性发生变化，新创建的Connection对象是没问题的，但是连接池中已经创建的Connection对象相关信息是不能动态修改的，所以依然需要重启应用
 
 ## Zuul
+![avatar](zuul.jpg)
 ![avatar](zuul.png)
+工作流程：
+1. http发送请求到zuul网关
+2. zuul网关首先经过pre filter
+3. 验证通过后进入routing filter，接着将请求转发给远程服务，远程服务执行完返回结果，如果出错，则执行error filter
+4. 继续往下执行post filter
+5. 最后返回响应给http客户端
+
+## Hystrix
+![avatar](hystrix.jpg)
+工作流程：
+1. 每次调用都会创建HystrixCommand或者HystrixObservableCommand对象
+2. 执行execute(observe)或queue(toObservable)做同步/异步调用
+3. 检查请求结果是否被缓存,如果缓存直接返回
+4. 检查是否开启了断路器，如果开启直接跳到步骤8
+5. 检查线程池/信号量是否跑满，如果跑满进入步骤8
+6. 执行HystrixObservableCommand.construct()或HystrixCommand.run()，如果执行异常或者调用超时直接跳到步骤8
+7. 计算断路器状态,所有的运行状态(成功, 失败, 拒绝,超时)上报给断路器，用于统计从而判断断路器状态
+8. 调用fallback降级机制，通过上述步骤会有（熔断器打开，线程池/信号量跑满，调用超时，调用失败）四种情况会进行降级处理
+9. 返回依赖请求的真正结果
+
+## Ribbon
