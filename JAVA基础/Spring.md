@@ -3,7 +3,9 @@
 ## SpringCloud
 
 ### Eureka
-![avatar](Eureka.jpg)
+![avatar](eureka.png)
+
+![avatar](eureka-workflow.jpg)
 工作流程：
 1. Eureka Server启动成功，等待服务端注册。在启动过程中如果配置了集群，集群之间定时通过Replicate同步注册表，每个Eureka Server都存在独立完整的服务注册表信息
 2. Eureka Client启动时根据配置的Eureka Server地址去注册中心注册服务
@@ -63,3 +65,24 @@ Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩�
 9. 返回依赖请求的真正结果
 
 ## Ribbon
+工作流程：
+![avatar](ribbon.jpg)
+1. 通过ServerList从配置文件或者注册中心获取服务节点列表信息
+2. 某些情况下我们可能需要通过通过ServerListFilter按照指定策略过滤服务节点列表
+3. 为了避免每次都要去注册中心或者配置文件中获取服务节点信息，我们会将过滤后的服务列表信息存到本地内存。此时如果新增服务节点或者是下线某些服务时，我们需要通过ServerListUpdater来动态更新服务列表
+4. 当有些服务节点已经无法提供服务后，我们会通过IPing（心跳检测）来剔除服务ribbon
+5. 最后ILoadBalancer 接口通过IRule指定的负载均衡算法去服务列表中选取一个服务
+
+负载均衡策略
+
+|策略|策略描述|实现说明|
+|-------|:---|:---|
+|AvailabilityFilteringRule|先过滤掉由于多次访问故障而处于断路器状态的服务，还有并发的连接数量（active connections）超过阈值的服务，然后对剩余的服务列表按照轮询策略进行访问|使用一个AvailabilityPredicate来包含过滤server的逻辑，其实就就是检查status里记录的各个server的运行状态|
+|BestAvailableRule|先过滤掉由于多次访问故障而处于断路器跳闸状态的服务，然后选择一个并发量最小的服务|逐个考察Server，如果Server被tripped了，则忽略，在选择其中ActiveRequestsCount最小的server|
+|ZoneAvoidanceRule|综合判断Server所在区域的性能和Server的可用性选择服务器|使用ZoneAvoidancePredicate和AvailabilityPredicate来判断是否选择某个server，前一个判断判定一个zone的运行性能是否可用，剔除不可用的zone（的所有server），AvailabilityPredicate用于过滤掉连接数过多的Server|
+|RandomRule|随机选择一个服务|在index上随机，选择index对应位置的server|
+|RetryRule|对选定的负载均衡策略机上重试机制|在一个配置时间段内当选择server不成功，则一直尝试使用subRule的方式选择一个可用的server|
+|RoundRobinRule|roundRobin方式轮询选择server|轮询index，选择index对应位置的server|
+|WeightedResponseTimeRule|根据响应时间分配一个weight，响应时间越长，weight越小，被选中的可能性越低|一个后台线程定期（30s）从status里面读取评价响应时间，为每个server计算一个weight（responsetime减去每个server自己平均的responsetime）。当刚开始运行没有形成status时，使用RoundRobinRule，等统计信息足够，会切换|
+
+## Fegin
