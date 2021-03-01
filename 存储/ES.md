@@ -1,14 +1,14 @@
 # ES
 ![avatar](es.png)
 
-## 写入流程
+## 写入
+流程：
 1. 客户端选择一个node发送请求过去，这个node就是coordinating node (协调节点)
 2. coordinating node，对document进行路由，将请求转发给对应的node
 3. 实际上的node上的primary shard处理请求，然后将数据同步到replica node
 4. coordinating node，如果发现primary node和所有的replica node都搞定之后，就会返回请求到客户端
 
 原理：
-
 1. 数据先写入到buffer里面，在buffer里面的数据时搜索不到的，同时将数据写入到translog日志文件之中 
 2. 如果buffer快满了，或是一段时间之后，就会将buffer数据refresh到一个新的OS cache之中，然后每隔1秒，就会将OS cache的数据写入到segment file之中，但是如果每一秒钟没有新的数据到buffer之中，就会创建一个新的空的segment file，只要buffer中的数据被refresh到OS cache之中，就代表这个数据可以被搜索到了。当然可以通过restful api 和Java api，手动的执行一次refresh操作，就是手动的将buffer中的数据刷入到OS cache之中，让数据立马搜索到，只要数据被输入到OS cache之中，buffer的内容就会被清空了。同时进行的是，数据到shard之后，就会将数据写入到translog之中，每隔5秒将translog之中的数据持久化到磁盘之中 
 3. 重复以上的操作，每次一条数据写入buffer，同时会写入一条日志到translog日志文件之中去，这个translog文件会不断的变大，当达到一定的程度之后，就会触发commit操作。
@@ -21,14 +21,16 @@
 9. buffer每次更新一次，就会产生一个segment file 文件，所以在默认情况之下，就会产生很多的segment file 文件，将会定期执行merge操作
 10. 每次merge的时候，就会将多个segment file 文件进行合并为一个，同时将标记为delete的文件进行删除，然后将新的segment file 文件写入到磁盘，这里会写一个commit point，标识所有的新的segment file，然后打开新的segment file供搜索使用。
 
-## 读取流程
+## 读取
+流程：  
 查询，GET某一条的数据，写入某个document，这个document会自动给你分配一个全局的唯一ID，同时跟住这个ID进行hash路由到对应的primary shard上面去，当然也可以手动的设置ID
 1. 客户端发送任何一个请求到任意一个node，成为coordinate node
 2. coordinate node 对document进行路由，将请求转发到对应的node，此时会使用round-robin随机轮训算法，在primary shard 以及所有的replica中随机选择一个，让读请求负载均衡，
 3. 接受请求的node，返回document给coordinate note
 4. coordinate node返回给客户端
 
-## 搜索流程
+## 搜索
+流程：
 1. 客户端发送一个请求给coordinate node
 2. 协调节点将搜索的请求转发给所有的shard对应的primary shard 或replica shard
 3. query phase：每一个shard 将自己搜索的结果（其实也就是一些唯一标识），返回给协调节点，有协调节点进行数据的合并，排序，分页等操作，产出最后的结果
