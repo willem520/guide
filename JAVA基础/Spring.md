@@ -41,7 +41,7 @@
 Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩展机制实现的，在Spring容器启动过程中，Apollo通过自定义的BeanPostProcessor和BeanFactoryPostProcessor將参数中包含${…}占位符和@Value注解的Bean注册到Apollo框架中定义的注册表中。然后通过Http长轮询不断的去获取服务端的配置信息，一旦配置发生变化，Apollo会根据变化的配置的Key找到对应的Bean，然后修改Bean的属性，从而实现了配置动态生效的特性。
 需要注意的是，Apollo在配置变化后，只能修改Bean的属性，例如我们数据源的属性发生变化，新创建的Connection对象是没问题的，但是连接池中已经创建的Connection对象相关信息是不能动态修改的，所以依然需要重启应用
 
-## Zuul
+## Zuul 1.x
 ![avatar](zuul.jpg)
 ![avatar](zuul.png)
 工作流程：
@@ -50,6 +50,25 @@ Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩�
 3. 验证通过后进入routing filter，接着将请求转发给远程服务，远程服务执行完返回结果，如果出错，则执行error filter
 4. 继续往下执行post filter
 5. 最后返回响应给http客户端
+
+## Gateway
+![avatar](gateway-workflow.png)
+工作流程：
+1. Gateway的客户端会向SpringCloud Gateway发起请求，请求被HttpWebHandlerAdapter进行提取组装成网关的上下文，然后传递到DispatcherHandler
+2. DispatcherHandler主要负责分发请求对应的处理器，比如将请求分发到对应RoutePredicateHandlerMapping(路由断言处理器映射器） 
+3. RoutePredicateHandlerMapping路由断言处理映射器主要用于路由的查找，以及找到路由后返回对应的FilteringWebHandler
+4. FilteringWebHandler组装Filter链表并调用Filter执行一系列Filter处理，然后把请求转到后端对应的代理服务处理，处理完毕后，将Response返回到Gateway客户端
+
+|对比项目/网关|Zuul 1.x|Gateway|
+|-------|:---|:---|
+|实现|基于Servlet2.x构建，使用阻塞的API|基于Spring5、Project Reactor、SpringBoot2、使用非阻塞的API|
+|长连接|不支持|支持|
+|不适用场景|后端服务响应慢或者高并发场景下，因为线程数量是有限的，线程容易被耗尽，导致新请求被拒绝|中小流量项目，使用Zuu1.x更适合|
+|限流|无|内置限流过滤器|
+|上手难度|同步编程，上手简单|门槛较高，上手难度中等|
+|SpringCloud集成|是|是|
+|Sentinel集成|是|是|
+
 
 ## Hystrix
 ![avatar](hystrix.jpg)
@@ -86,3 +105,4 @@ Apollo配置中心动态生效机制，是基于Http长轮询请求和Spring扩�
 |WeightedResponseTimeRule|根据响应时间分配一个weight，响应时间越长，weight越小，被选中的可能性越低|一个后台线程定期（30s）从status里面读取评价响应时间，为每个server计算一个weight（responsetime减去每个server自己平均的responsetime）。当刚开始运行没有形成status时，使用RoundRobinRule，等统计信息足够，会切换|
 
 ## Fegin
+![avatar](fegin-workflow.jpg)
