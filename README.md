@@ -1,6 +1,7 @@
 # 资料文档
 记录工作中的点滴成长
-
+可关注公众号  
+![](qrcode.jpg)
 ## [JAVA基础](JAVA基础/README.md)
 ## [分布式协议](分布式协议/README.md)
 ## [存储](存储/README.md)
