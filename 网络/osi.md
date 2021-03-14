@@ -32,8 +32,13 @@ HTTP连接最显著的特点是客户端发送的每次请求都需要服务器�
 #### 完整HTTP请求
 1. 域名解析
 2. 发起TCP的3次握手建立连接
+   ![avatar](三次握手.gif)
+   1. 建立连接：客户端发送连接请求报文段，将SYN位置为1，Sequence Number为x；然后，客户端进入SYN_SEND状态，等待服务器的确认
+   2. 服务器收到SYN报文段：服务器收到客户端的SYN报文段，需要对这个SYN报文段进行确认，设置Acknowledgment Number为x+1(Sequence Number+1)；同时，自己还要发送SYN请求信息，将SYN位置为1，Sequence Number为y；服务器端将上述所有信息放到一个报文段（即SYN+ACK报文段）中，一并发送给客户端，此时服务器进入SYN_RECV状态
+   3. 客户端收到服务器的SYN+ACK报文段：然后将Acknowledgment Number设置为y+1，向服务器发送ACK报文段，这个报文段发送完毕以后，客户端和服务器端都进入ESTABLISHED状态，完成TCP三次握手
 3. 发起http请求
 4. 服务器响应http请求
 5. 浏览器解析html代码，并请求html代码中的资源
 6. 4次挥手断开TCP连接
+   ![avatar](四次挥手.gif)
 7. 浏览器对页面进行渲染呈现给用户
