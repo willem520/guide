@@ -16,7 +16,7 @@ Apache Hadoop YARN（Yet Another Resource Negotiator,另一种资源协调者）
 >
 > * NodeManager：驻留在YARN集群中的每个节点上的代理。主要负责管理抽象的容器，只处理与容器相关的事情，而不具体负责每个任务（Map任务或Reduce任务）自身状态的管理，因为这些管理工作是由ApplicationMaster完成的，ApplicationMaster会通过不断与NodeManager通信来掌握各个任务的执行状态 
 
-> **工作流程**
+## 工作流程
 > ![avatar](yarn-workflow.jpg)
 > 1. 用户编写客户端应用程序，向YARN提交应用程序，提交的内容包括ApplicationMaster程序，启动ApplicationMaster的命令、用户程序等
 > 2. YARN中的ResourceManager负责接收和处理来自客户端的请求，为应用程序分配一个容器，在该容器中启动一个ApplicationMaster
