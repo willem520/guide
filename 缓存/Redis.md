@@ -12,8 +12,8 @@ string, hash, list, set, zset
 |数据安全性|丢数据|根据策略决定|
 |轻重|重|轻|
 
-## 通信流程
-![avatar](redis.png)
+## 工作流程
+![avatar](redis-workflow.png)
 因此，Redis单线程是指执行命令的核心模块是单线程。
 
 ## Redis为什么快
@@ -33,7 +33,7 @@ string, hash, list, set, zset
 
 ### 主从复制
 指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点
-![avatar](master-slave.jpg)
+![avatar](redis-master-slave.jpg)
 优点：
 * 当主节点宕机，从节点作为主节点的备份可以随时顶上来
 * 扩展主节点的读能力，分担主节点读压力
@@ -45,7 +45,7 @@ string, hash, list, set, zset
 * 主节点的存储能力受到单机的限制
 
 ### 哨兵
-![avatar](sentinel.jpg)
+![avatar](redis-sentinel.jpg)
 优点：
 * 哨兵模式是基于主从模式的，所有主从的优点，哨兵模式都具有
 * 主从可以自动切换，系统更健壮，可用性更高。
@@ -55,4 +55,4 @@ string, hash, list, set, zset
 * Redis较难支持在线扩容，对于集群，容量达到上限时在线扩容会变得很复杂
 
 ### 集群
-![avatar](cluster.jpg)
+![avatar](redis-cluster.jpg)

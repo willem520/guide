@@ -21,13 +21,13 @@
 * 然后假设总的目标吞吐量是Tt,那么分区数=Tt/max（Tp,Tc）
 
 ## Rebalance
-触发条件由3个
+触发条件有3个
 * 组成员个数发生变化。例如有新的 consumer 实例加入该消费组或者离开组
 * 订阅Topic的个数发生变化
 * 订阅Topic的分区数发生变化
 
-过程
-* Join。这一步中，所有成员都向coordinator发送JoinGroup请求，请求加入消费组。一旦所有成员都发送了JoinGroup请求，coordinator会从中选择一个consumer担任leader的角色，并把组成员信息以及订阅信息发给leader——注意leader和coordinator不是一个概念。leader负责消费分配方案的制定
-![avatar](join.png)
-* Sync，这一步leader开始分配消费方案，即哪个consumer负责消费哪些topic的哪些partition。一旦完成分配，leader会将这个方案封装进SyncGroup请求中发给coordinator，非leader也会发SyncGroup请求，只是内容为空。coordinator接收到分配方案之后会把方案塞进SyncGroup的response中发给各个consumer。这样组内的所有成员就都知道自己应该消费哪些分区了
-![avatar](sync.png)
+> 工作过程
+> * Join：这一步中，所有成员都向coordinator发送JoinGroup请求，请求加入消费组。一旦所有成员都发送了JoinGroup请求，coordinator会从中选择一个consumer担任leader的角色，并把组成员信息以及订阅信息发给leader——注意leader和coordinator不是一个概念。leader负责消费分配方案的制定
+> ![avatar](kafka-consumer-join.png)
+> * Sync：这一步leader开始分配消费方案，即哪个consumer负责消费哪些topic的哪些partition。一旦完成分配，leader会将这个方案封装进SyncGroup请求中发给coordinator，非leader也会发SyncGroup请求，只是内容为空。coordinator接收到分配方案之后会把方案塞进SyncGroup的response中发给各个consumer。这样组内的所有成员就都知道自己应该消费哪些分区了
+> ![avatar](kafka-consumer-sync.png)
