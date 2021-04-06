@@ -125,8 +125,9 @@ jvm小工具
 轻量级锁认为竞争存在，但是竞争的程度很轻，一般两个线程对于同一个锁的操作都会错开，或者说稍微等待一下（自旋），另一个线程就会释放锁。 但是当自旋超过一定的次数，或者一个线程在持有锁，一个在自旋，又有第三个来访时，轻量级锁膨胀为重量级锁，重量级锁使除了拥有锁的线程以外的线程都阻塞，防止CPU空转。
 
 ## ThreadPoolExecutor
-流程：
-![avatar](threadPoolExecutor.jpg)
+### 流程
+> ![avatar](threadPoolExecutor.jpg)
+
 ### RejectedExecutionHandler(拒绝策略)
 > AbortPolicy：直接抛出异常  
 > CallerRunsPolicy：使用调用者所在线程来运行任务  
