@@ -3,6 +3,7 @@ HDFS(Hadoop Distributed File System)基于Google发布的GFS论文设计开发�
 ![avatar](hdfs.jpg)
 
 ## 基本概念
+HDFS采用主从（Master/Slave）结构模型
 > * NameNode：用于存储、生成文件系统的元数据、运行一个实例
 >     * FsImage：用于维护文件系统树以及文件树中所有的文件和文件夹的元数据
 >     * EditLog：记录了所有针对文件的创建、删除、重命名等操作
