@@ -20,7 +20,7 @@ string, hash, list, set, zset
 ![avatar](redis-fast.png)
 可查看详细解释：https://www.jianshu.com/p/6cb9e96207f8
 
-## 模式
+## 部署模式
 ### 单机
 优点：
 * 部署简单，0成本
