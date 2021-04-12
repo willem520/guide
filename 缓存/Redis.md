@@ -12,15 +12,15 @@ string, hash, list, set, zset
 |数据安全性|丢数据|根据策略决定|
 |轻重|重|轻|
 
-## 通信流程
-![avatar](redis.png)
+## 工作流程
+![avatar](redis-workflow.png)
 因此，Redis单线程是指执行命令的核心模块是单线程。
 
 ## Redis为什么快
 ![avatar](redis-fast.png)
 可查看详细解释：https://www.jianshu.com/p/6cb9e96207f8
 
-## 模式
+## 部署模式
 ### 单机
 优点：
 * 部署简单，0成本
@@ -33,7 +33,7 @@ string, hash, list, set, zset
 
 ### 主从复制
 指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点
-![avatar](master-slave.jpg)
+![avatar](redis-master-slave.jpg)
 优点：
 * 当主节点宕机，从节点作为主节点的备份可以随时顶上来
 * 扩展主节点的读能力，分担主节点读压力
@@ -45,7 +45,7 @@ string, hash, list, set, zset
 * 主节点的存储能力受到单机的限制
 
 ### 哨兵
-![avatar](sentinel.jpg)
+![avatar](redis-sentinel.jpg)
 优点：
 * 哨兵模式是基于主从模式的，所有主从的优点，哨兵模式都具有
 * 主从可以自动切换，系统更健壮，可用性更高。
@@ -55,14 +55,4 @@ string, hash, list, set, zset
 * Redis较难支持在线扩容，对于集群，容量达到上限时在线扩容会变得很复杂
 
 ### 集群
-![avatar](cluster.jpg)
-
-### 内存淘汰策略
-* volatile-lru：从已设置过期时间的数据集中挑选最近最少使用的数据淘汰。
-* volatile-ttl：从已设置过期时间的数据集中挑选将要过期的数据淘汰。
-* volatile-random：从已设置过期时间的数据集中任意选择数据淘汰。
-* volatile-lfu：从已设置过期时间的数据集挑选使用频率最低的数据淘汰。
-* allkeys-lru：从数据集中挑选最近最少使用的数据淘汰
-* allkeys-lfu：从数据集中挑选使用频率最低的数据淘汰。
-* allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
-* no-enviction（驱逐）：禁止驱逐数据，这也是默认策略。意思是当内存不足以容纳新入数据时，新写入操作就会报错，请求可以继续进行，线上任务也不能持续进行，采用no-enviction策略可以保证数据不被丢失
+![avatar](redis-cluster.jpg)
