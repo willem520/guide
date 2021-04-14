@@ -1,7 +1,191 @@
 #Redis
 
+## 数据结构
+Redis使用对象来存储键和值，对象由redisObject结构表示
+```
+typedef struct redisObject{
+   // 类型
+   unsigned type:4;
+   // 编码
+   unsigned encoding:4;
+   // 底层数据结构的指针
+   void *ptr;
+} robj;
+```
+type属性记录对象的类型
+
+|类型|对象类型名称|
+|:---|:---|
+|REDIS_STRING|字符串对象|
+|REDIS_LIST|列表对象|
+|REDIS_HASH|哈希对象|
+|REDIS_SET|集合对象|
+|REDIS_ZSET|有序集合对象|
+
+*ptr属性指向对象的底层数据结构，而这些数据结构有encoding属性决定（之所以由encoding属性来决定对象的底层数据结构，是为了实现同一对象类型，支持不同的底层实现）
+
+|编码常量|编码对应的底层数据结构|
+|:---|:---|
+|REDIS_ENCODING_INT|long类型的整数|
+|REDIS_ENCODING_EMBSTR|emstr编码的简单动态字符串|
+|REDIS_ENCODING_RAW|简单动态字符串|
+|REDIS_ENCODING_HT|字典|
+|REDIS_ENCODING_LINKEDLIST|双端链表|
+|REDIS_ENCODING_ZIPLIST|压缩列表|
+|REDIS_ENCODING_INTSET|整数集合|
+|REDIS_ENCODING_SKIPLIST|跳跃表和字典|
+
 ## 数据类型
-string, hash, list, set, zset
+### string
+string对应的编码类型可以是int（保存不超过long类型的整数）、raw（长度>39字节的字符串）、embstr（长度<=39字节）
+> * 简单动态字符串（SDS）
+> ```
+> struct sdshdr {
+>    // 字符串长度
+>    int len;
+>    // buf数组中未使用的字节数
+>    int free;
+>    // 字节数组，用于保存字符串
+>    char buf[];
+> }
+> ```
+> ![sds-int](sds-int.png)
+> ![sds-raw](sds-raw.png)
+> ![sds-embstr](sds-embstr.png)
+
+### list
+对应的编码类型可以是linkedlist、ziplist（所有字符元素长度<64字节，且元素个数小于512个）
+> * ListNode
+> ```
+> typedef struct listNode {
+>    // 前置节点
+>    struct listNode *prev;
+>    // 后置节点
+>    struct listNode *next;
+>    // 节点值
+>    void *value;
+> } listNode;
+> 
+> typedef struct list {
+>   // 表头节点
+>   listNode *head;
+>   // 表尾节点
+>   listNode *tail;
+>   // 链表包含的节点数量
+>   unsigned long len;
+>   // 节点复制函数
+>   void *(*dup)(void *ptr);
+>   // 节点释放函数
+>   void (*free)(void *ptr);
+>   // 节点对比函数
+>   int (*match)(void *ptr, void *key);
+> } list;
+> ```
+> ![list-linkedlist](list-linkedlist.png)
+> * ziplist
+> ![list-ziplist](list-ziplist.png)
+
+### hash
+对应的编码是ziplist、hashtable
+> * ziplist
+> ![hash-ziplist](hash-ziplist.png)
+> * hashtable
+> ```
+> typedef struct dict {
+>   // 类型特定函数
+>   dictType *type;
+>   // 私有数据
+>   void *privdata;
+>   // 哈希表
+>   dictht ht[2];
+>   //rehash索引
+>   // 当rehash不在进行时，值为-1
+>   int rehashidx;
+> }
+> 
+> typedef struct dictht{
+>   // 哈希表数组
+>   dictEntry **table;
+>   // 哈希表大小
+>   unsigned long size;
+>   // 哈希表大小掩码，用于计算索引值
+>   // 总是等于 size-1
+>   unsigned long sizemask;
+>   // 该哈希表已有节点数量
+>   unsigned long used;
+> } dictht;
+> 
+> typedef struct dictEntry {
+>   // 键
+>   void *key;
+>   // 值
+>   union {
+>       void *val;
+>       unit64_t u64;
+>       nit64_t s64;
+>   } v;
+>   // 指向下一个哈希表节点，形成链表
+>   struct dictEntry *next;
+> } dictEntry;
+>
+> ```
+> ![hash-hashtable](hash-hashtable.png)
+> 
+### set
+对应的编码是intset（保存的元素都是整数且个数<=512）、hashtable
+> * intset
+> ```
+> typedef struct intset {
+>   // 编码方式
+>   uint32_t encoding;
+>   // 集合包含的元素数量
+>   uint32_t length;
+>   // 保存元素的数组
+>   int8_t contents[];
+> } intset;
+> ```
+> ![set-intset](set-intset.png)
+> * hashtable
+> ![set-hashtable](set-hashtable.png)
+
+### zset
+对应的编码可以是ziplist（元素个数<128，且元素长度<64字节）、skiplist
+> ```
+> typedef struct zset {
+>   zskiplist *zs1;
+>   dict *dict;
+> }
+> ```
+> * ziplist
+> ![zset-ziplist](zset-ziplist.png)
+> * skiplist
+> ```
+> typedef struct zskiplistNode {
+>   // 后退指针
+>   struct zskiplistNode *backward;
+>   // 分值
+>   double score;
+>   // 成员对象
+>   robj *obj;
+>   // 层
+>   struct zskiplistLevel {
+>       // 前进指针
+>       struct zskiplistNode *forward;
+>       // 跨度
+>       unsigned int span;
+>   } level[];
+> } zskiplistNode;
+> 
+> typedef struct zskiplist {
+>   // 表头节点和表尾节点
+>   struct skiplistNode *header, *tail;
+>   // 节点数量
+>   unsigned long length;
+>   // 最大层数
+>   int level;
+> } zskiplist;
+> ```
+> ![zset-skiplist](zset-skiplist.png)
 
 ## 持久化
 |&nbsp;|RDB|AOF|
