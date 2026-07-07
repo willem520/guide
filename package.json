@@ -1,0 +1,10 @@
+{
+  "name": "guide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "记录工作中的点滴成长 - 技术学习笔记",
+  "scripts": {
+    "dev": "echo 'No dev server configured'",
+    "build": "echo 'No build step configured'"
+  }
+}
